@@ -26,17 +26,38 @@ else:
 confidence = st.sidebar.slider("Confidence Level", 0.80, 0.99, 0.95, step=0.01)
 
 # --- Calculation Logic ---
-# 1. Degrees of Freedom
-df = n - 1
-# 2. Critical Value (t-score)
-t_critical = stats.t.ppf((1 + confidence) / 2, df)
-# 3. Standard Error
+
+# 1. Determine the Test Type
+if n >= 30:
+    test_type = "Z-Test"
+    # Use Normal Distribution (Z)
+    critical_value = stats.norm.ppf((1 + confidence) / 2)
+    dist_name = "Normal (Z)"
+else:
+    test_type = "T-Test"
+    # Use Student's T-Distribution (T)
+    df = n - 1
+    critical_value = stats.t.ppf((1 + confidence) / 2, df)
+    dist_name = f"Student's T (df={df})"
+
+# 2. Standard Error (remains the same)
 standard_error = std_dev / np.sqrt(n)
-# 4. Margin of Error
-margin_of_error = t_critical * standard_error
-# 5. The Interval
+
+# 3. Margin of Error
+margin_of_error = critical_value * standard_error
+
+# 4. The Interval
 lower_bound = mean - margin_of_error
 upper_bound = mean + margin_of_error
+
+# --- Smart UI Feedback ---
+st.info(f"🧬 **Methodology:** Automatically selected a **{test_type}** because your sample size is **{n}**. Using critical value from {dist_name} distribution.")
+
+# Update the metrics display
+col1, col2, col3 = st.columns(3)
+col1.metric("Mean", round(mean, 2))
+col2.metric(f"{test_type} Score", round(critical_value, 3))
+col3.metric("Margin of Error", f"±{round(margin_of_error, 2)}")
 
 # --- Display Results ---
 col1, col2, col3 = st.columns(3)

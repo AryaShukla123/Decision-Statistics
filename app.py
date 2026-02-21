@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats as stats
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Confidence Interval Tool", layout="centered")
+st.set_page_config(page_title="Decision Statistics Tool", layout="centered")
 
 st.title("📊 Confidence Interval & Hypothesis Tool")
 st.markdown("Analyze your data to find the true mean and test against a target value.")

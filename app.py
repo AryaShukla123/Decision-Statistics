@@ -105,3 +105,40 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig)
+
+# --- N-Optimizer (Power Analysis) Section ---
+st.divider()
+st.header("🎯 N-Optimizer (Sample Size Planner)")
+st.markdown("How many more samples do you need to reach a specific precision?")
+
+target_moe = st.slider("Target Margin of Error",
+                       min_value=float(margin_of_error * 0.1),
+                       max_value=float(margin_of_error * 1.5),
+                       value=float(margin_of_error * 0.8))
+
+if target_moe > 0:
+
+    required_n = np.ceil((critical_value * std_dev / target_moe) ** 2)
+
+    # Display Result
+    st.write(f"To achieve a margin of error of **±{target_moe:.2f}**, you need a total sample size of:")
+    st.title(f"n = {int(required_n)}")
+
+    # Comparison logic
+    if required_n > n:
+        st.warning(f"You need **{int(required_n - n)} more** samples than you currently have.")
+    else:
+        st.success("Your current sample size is already sufficient for this precision!")
+
+# Visualizing the "Law of Diminishing Returns"
+# Show how MOE drops as N increases
+n_range = np.arange(max(2, n // 2), n * 3)
+moe_range = critical_value * (std_dev / np.sqrt(n_range))
+
+fig2 = go.Figure()
+fig2.add_trace(go.Scatter(x=n_range, y=moe_range, name="MOE vs Sample Size"))
+fig2.add_vline(x=required_n, line_dash="dash", line_color="green", annotation_text="Target N")
+fig2.update_layout(title="Required Sample Size vs. Margin of Error",
+                   xaxis_title="Sample Size (n)",
+                   yaxis_title="Margin of Error")
+st.plotly_chart(fig2)

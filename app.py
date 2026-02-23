@@ -106,18 +106,60 @@ elif analysis_mode == "Bivariate (Relationship)":
         m2.metric("R-Squared", f"{r_squared:.2%}")
         m3.metric("P-Value", round(p_value, 4))
 
-        # Visualization
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=x, y=y, mode='markers', name='Data Points'))
-        line = [slope * i + intercept for i in x]
-        fig.add_trace(go.Scatter(x=x, y=line, mode='lines', name='Regression Line', line=dict(color='red')))
-        fig.update_layout(title=f"Equation: y = {slope:.2f}x + {intercept:.2f}", xaxis_title="X", yaxis_title="Y")
-        st.plotly_chart(fig)
+        # --- Visualization Section ---
+        st.subheader("📊 Relationship Visualization")
+        tab1, tab2 = st.tabs(["Regression Line", "Residual Analysis"])
 
-        # Prediction
-        st.subheader("🔮 Make a Prediction")
-        predict_x = st.number_input(f"Enter a value for X to predict Y:", value=float(max(x)))
-        prediction = slope * predict_x + intercept
-        st.success(f"Predicted Y value: **{prediction:.2f}**")
+        with tab1:
+            # 1. Main Regression Plot
+            fig = go.Figure()
+            # Actual Data Points
+            fig.add_trace(go.Scatter(x=x, y=y, mode='markers',
+                                     marker=dict(color='royalblue', size=10, opacity=0.7),
+                                     name='Actual Data'))
+            # Line of Best Fit
+            x_range = np.linspace(min(x), max(x), 100)
+            y_range = slope * x_range + intercept
+            fig.add_trace(go.Scatter(x=x_range, y=y_range, mode='lines',
+                                     line=dict(color='firebrick', width=3),
+                                     name='Regression Line'))
+
+            fig.update_layout(title=f"Linear Relationship (y = {slope:.2f}x + {intercept:.2f})",
+                              xaxis_title="Independent Variable (X)",
+                              yaxis_title="Dependent Variable (Y)",
+                              template="plotly_white")
+            st.plotly_chart(fig, use_container_width=True)
+
+        with tab2:
+            # 2. Residual Plot (Shows the errors)
+            predictions = [slope * i + intercept for i in x]
+            residuals = [y[i] - predictions[i] for i in range(len(y))]
+
+            fig_res = go.Figure()
+            fig_res.add_trace(go.Scatter(x=x, y=residuals, mode='markers',
+                                         marker=dict(color='purple', symbol='diamond'),
+                                         name='Residuals'))
+            fig_res.add_hline(y=0, line_dash="dash", line_color="black")  # Zero-error line
+
+            fig_res.update_layout(title="Residual Plot (Checking for Randomness)",
+                                  xaxis_title="X Value",
+                                  yaxis_title="Error (Residual)",
+                                  template="plotly_white")
+            st.plotly_chart(fig_res, use_container_width=True)
+            st.caption("💡 Pro Tip: If these points look like random noise, your linear model is a good fit!")
+
+        # --- Prediction Tool (With Visual Context) ---
+        st.divider()
+        st.subheader("🔮 Predictive Analytics")
+        p_col1, p_col2 = st.columns([1, 2])
+
+        with p_col1:
+            predict_x = st.number_input(f"Enter X value:", value=float(np.mean(x)))
+            prediction = slope * predict_x + intercept
+            st.metric("Predicted Y", f"{prediction:.2f}")
+
+        with p_col2:
+            st.write(
+                f"**Interpretation:** For every 1 unit increase in X, Y is expected to change by **{slope:.2f}** units.")
     else:
         st.error("Error: X and Y must have the same number of data points.")

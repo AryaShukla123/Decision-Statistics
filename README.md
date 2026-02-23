@@ -11,7 +11,7 @@
 ---
 
 ## 🚀 Live Demo
-[🔗 View the Live Dashboard]()
+[🔗 View the Live Dashboard](https://aryashukla123-decision-statistics-app-0b0thh.streamlit.app/)
 
 ---
 

@@ -47,7 +47,7 @@ if analysis_mode == "Univariate (One Variable)":
     upper_bound = mean + margin_of_error
 
     # --- Results Display ---
-    st.info(f"🧬 **Methodology:** Using a **{test_type}** ({dist_name}) based on sample size $n={n}$.")
+    st.info(f"**Methodology:** Using a **{test_type}** ({dist_name}) based on sample size $n={n}$.")
     c1, c2, c3 = st.columns(3)
     c1.metric("Sample Mean", f"{mean:.2f}")
     c2.metric("Margin of Error", f"±{margin_of_error:.2f}")
@@ -57,7 +57,7 @@ if analysis_mode == "Univariate (One Variable)":
 
     # --- Hypothesis Testing ---
     st.divider()
-    st.header("🧪 Hypothesis Testing")
+    st.header("Hypothesis Testing")
     null_hypothesis = st.number_input("Null Hypothesis Value (μ₀):", value=mean)
     test_stat = (mean - null_hypothesis) / standard_error
     p_value = 2 * (1 - stats.norm.cdf(abs(test_stat))) if n >= 30 else 2 * (1 - stats.t.cdf(abs(test_stat), df))
@@ -77,7 +77,7 @@ if analysis_mode == "Univariate (One Variable)":
 
     # --- N-Optimizer ---
     st.divider()
-    st.header("🎯 N-Optimizer")
+    st.header("N-Optimizer")
     target_moe = st.slider("Target Margin of Error", min_value=float(margin_of_error * 0.1), max_value=float(margin_of_error * 1.5), value=float(margin_of_error * 0.8))
     required_n = np.ceil((critical_value * std_dev / target_moe) ** 2)
     st.write(f"Total sample size needed for ±{target_moe:.2f}:")
@@ -150,7 +150,7 @@ elif analysis_mode == "Bivariate (Relationship)":
 
         # --- Prediction Tool (With Visual Context) ---
         st.divider()
-        st.subheader("🔮 Predictive Analytics")
+        st.subheader("Predictive Analytics")
         p_col1, p_col2 = st.columns([1, 2])
 
         with p_col1:
@@ -163,3 +163,30 @@ elif analysis_mode == "Bivariate (Relationship)":
                 f"**Interpretation:** For every 1 unit increase in X, Y is expected to change by **{slope:.2f}** units.")
     else:
         st.error("Error: X and Y must have the same number of data points.")
+
+# --- Data Export Section ---
+st.divider()
+st.subheader("📂 Export Results")
+
+report_text = f"StatCalc Analysis Report\n" + "="*25 + "\n"
+
+if analysis_mode == "Univariate (One Variable)":
+    report_text += f"Mode: Univariate Analysis\n"
+    report_text += f"Sample Mean: {mean:.2f}\n"
+    report_text += f"Confidence Interval ({confidence*100}%): [{lower_bound:.2f}, {upper_bound:.2f}]\n"
+    report_text += f"Margin of Error: ±{margin_of_error:.2f}\n"
+    report_text += f"P-Value vs {null_hypothesis}: {p_value:.4f}\n"
+else:
+    report_text += f"Mode: Bivariate Regression\n"
+    report_text += f"Equation: y = {slope:.2f}x + {intercept:.2f}\n"
+    report_text += f"R-Squared: {r_squared:.4f}\n"
+    report_text += f"Correlation (r): {r_value:.4f}\n"
+    report_text += f"P-Value (Slope): {p_value:.4f}\n"
+
+# Download Button
+st.download_button(
+    label="📥 Download Analysis Report (.txt)",
+    data=report_text,
+    file_name="statcalc_report.txt",
+    mime="text/plain"
+)
